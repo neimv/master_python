@@ -13,7 +13,7 @@ class Person(BaseModel):
     last_name: str
     age: int
     hain: Optional[str] = None
-    is_married: Optional[bool]= None
+    is_married: Optional[bool] = None
 
 
 @app.get('/')
@@ -25,4 +25,4 @@ def home():
 @app.post('/person/new')
 def create_person(person: Person = Body(...)):
 
-    return Person
+    return person
