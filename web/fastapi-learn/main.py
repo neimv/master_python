@@ -3,8 +3,8 @@ from typing import Optional
 from enum import Enum
 
 from pydantic import BaseModel
-from pydantic import Field
-from fastapi import FastAPI, Body, Query, Path
+from pydantic import Field, EmailStr
+from fastapi import FastAPI, Body, Query, Path, status, Form, Header, Cookie, UploadFile, File, HTTPException
 
 app = FastAPI()
 
@@ -18,24 +18,32 @@ class HairColor(Enum):
     red = "red"
 
 
-class Person(BaseModel):
+class PersonBase(BaseModel):
     first_name: str = Field(..., min_length=1, max_length=50)
     last_name: str = Field(..., min_length=1, max_length=50)
     age: int = Field(..., gt=0, le=115)
     hair_color: Optional[HairColor] = Field(default=None)
     is_married: Optional[bool] = Field(default=None)
 
+
+class Person(PersonBase):
+    password: str = Field(..., min_length=8)
+
     # Para llenar datos de pruebas
-    class Config:
-        schema_extra = {
-            "example": {
-                "first_name": "Neimv",
-                "last_name": "Zatara",
-                "age": 21,
-                "hair_color": "black",
-                "is_married": True
-            }
-        }
+    # class Config:
+    #     schema_extra = {
+    #         "example": {
+    #             "first_name": "Neimv",
+    #             "last_name": "Zatara",
+    #             "age": 21,
+    #             "hair_color": "black",
+    #             "is_married": True
+    #         }
+    #     }
+
+
+class PersonOut(PersonBase):
+    pass
 
 
 class Location(BaseModel):
@@ -44,20 +52,49 @@ class Location(BaseModel):
     country: str
 
 
-@app.get('/')
+class LoginOut(BaseModel):
+    username: str = Field(..., max_length=20, example="holi")
+    message: str = Field(default="Login successfully")
+
+
+@app.get('/', status_code=status.HTTP_200_OK)
 def home():
     return {"hello": "World"}
 
 
 # Request and response body
-@app.post('/person/new')
+@app.post(
+        '/person/new',
+        response_model=PersonOut,
+        status_code=status.HTTP_201_CREATED,
+        tags=["Persons"],
+        summary="Create person in the app"
+    )
 def create_person(person: Person = Body(...)):
+    """
+    - Title: Create Person
+
+    - Description: This path operation creates a person in the app
+      and save the information in the database
+
+    - Parameters:
+        - Request body parameter:
+            - **person: Person** -> A person model with first name
+              last name, hair color, age and is_married
+    - Result: Return a person model with first name, last name, age
+      hair color and marital status
+    """
 
     return person
 
 
 # Validation query
-@app.get('/person/detail')
+@app.get(
+        '/person/detail',
+        status_code=status.HTTP_200_OK,
+        tags=["Persons"],
+        deprecated=True
+    )
 def show_person(
             name: Optional[str] = Query(
                 default=None,
@@ -76,15 +113,23 @@ def show_person(
 
 
 # Validations path parameters
-@app.get("/person/detail/{person_id}")
+@app.get("/person/detail/{person_id}", tags=["Persons"])
 def show_person_detail(
             person_id: int = Path(..., gt=0)
         ):
+    tmp_register = [1, 2, 3, 4, 5]
+
+    if person_id not in tmp_register:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="This person doesn't exist!"
+        )
+
     return {person_id: "It exist"}
 
 
 # Valitacion, request body
-@app.put("/person/{person_id}")
+@app.put("/person/{person_id}", tags=["Persons"])
 def update_person(
             person_id: int = Path(
                 ...,
@@ -101,4 +146,30 @@ def update_person(
     return result
 
 
-# 
+# Forms
+@app.post(path="/login", response_model=LoginOut, status_code=status.HTTP_200_OK)
+def login(username: str = Form(...), password: str = Form(...)):
+    return LoginOut(username=username)
+
+
+# Cookies and headers
+@app.post(path="/contact", status_code=status.HTTP_200_OK)
+def contact(
+            first_name: str = Form(..., max_length=20, min_length=1),
+            last_name: str = Form(..., max_length=20, min_length=1),
+            email: EmailStr = Form(...),
+            message: str = Form(..., min_length=20),
+            user_agent: Optional[str] = Header(default=None),
+            ads: Optional[str] = Cookie(default=None)
+        ):
+    return user_agent
+
+
+# Upload files
+@app.post("/post-image")
+def post_image(image: UploadFile = File(...)):
+    return {
+        'Filename': image.filename,
+        'Format': image.content_type,
+        'Size(kb)': round(len(image.file.read()) / 1024, ndigits=2)
+    }
