@@ -1,7 +1,8 @@
 
+import json as js
 from typing import List
 
-from fastapi import FastAPI, status
+from fastapi import Body, FastAPI, status
 
 from models import UserBase, User, Tweet
 
@@ -19,8 +20,17 @@ app = FastAPI()
         summary="Register a User",
         tags=["Users"]
     )
-def signup():
-    pass
+def signup(user: User = Body(...)):
+    with open("users.json", 'r+', encoding="utf-8") as f:
+        results = js.loads(f.read())
+        user_dict = user.dict()
+        user_dict["user_id"] = str(user_dict['user_id'])
+        user_dict["birth_date"] = str(user_dict["birth_date"])
+        results.append(user_dict)
+        f.seek(0)
+        f.write(js.dumps(results))
+        
+    return user
 
 
 @app.post(
@@ -44,7 +54,10 @@ def login():
         tags=["Users"]
     )
 def show_all_users():
-    pass
+    with open("users.json", "r", encoding="utf-8") as f:
+        results = js.loads(f.read())
+        
+    return results
 
 
 @app.get(
