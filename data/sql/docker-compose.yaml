@@ -3,15 +3,18 @@ version: '3.1'
 services:
 
   db:
-    image: postgres:14-alpine
+    image: postgres:14
     restart: always
     environment:
       POSTGRES_USER: neimv
-      POSTGRES_DB: transporte_masivo
+      POSTGRES_DB: platzimovies
       POSTGRES_PASSWORD: neimv
 
-  adminer:
-    image: adminer
+  pgadmin:
+    image: dpage/pgadmin4
     restart: always
     ports:
-      - 8080:8080
+      - 5050:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: neimv.zatara@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: neimv
