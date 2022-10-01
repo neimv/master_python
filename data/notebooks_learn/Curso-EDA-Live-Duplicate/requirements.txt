@@ -1,0 +1,9 @@
+palmerpenguins
+numpy
+pandas
+seaborn
+matplotlib
+empiricaldist
+statsmodels
+sklearn
+pyjanitor
