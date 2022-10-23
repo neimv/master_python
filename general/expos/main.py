@@ -1,5 +1,6 @@
 
 import argparse
+from fileinput import filename
 
 
 class IrisClass:
@@ -57,20 +58,33 @@ def file_open_old(
     full: bool = False
 ):
     f = open(name, mode, encoding=encoding)
-    read_file(f)
+    __file_works(name, mode, f, full)
     f.close()
 
 
-def file_open_context(name: str, mode: str, encoding: str = "utf-8"):
+def file_open_context(
+    name: str,
+    mode: str,
+    encoding: str = "utf-8",
+    full: bool = False
+):
     pass
 
 
-def write_file(file_buffer):
-    pass
+def write_file(file_name, mode, file_buffer, data, encoding='utf-8'):
+    file_name = f'{file_name}_backup.csv'
+    if data:
+        with open(file_name, 'w', encoding=encoding) as file_bk:
+            for flower in data:            
+                file_bk.write(flower.transform_class_type())
 
 
-def read_file(file_buffer):
+def read_file(file_buffer, full: bool) -> list:
     flowers = []
+
+    print(file_buffer)
+    file_buffer = file_buffer.readlines() if full else file_buffer
+    print(file_buffer)
 
     for line in file_buffer:
         line_split = line.replace('\n', '').split(',')
@@ -84,9 +98,29 @@ def read_file(file_buffer):
                 line_split[3],
                 line_split[4],
             )
-            print(str(iris_flower))
-            print(iris_flower.transform_class_type())
-            # flowers.append(iris_flower)
+            flowers.append(iris_flower)
+
+
+    return flowers
+
+
+def __file_works(name:str, mode: str, file_work, full):
+    if mode == 'r':
+        flowers = read_file(file_work, full)
+
+        for flower in flowers:
+            print(flower)
+    elif mode == 'w':
+        flowers = read_file(file_work, full)
+        write_file(name, mode, file_work, flowers)
+    elif mode == 'a':
+        pass
+    elif mode == 'x':
+        pass
+    elif mode == 'w+':
+        pass
+    elif mode == 'r+':
+        pass
 
 
 def main(argument):
@@ -94,5 +128,4 @@ def main(argument):
 
 
 if __name__ == "__main__":
-    file_open_old('iris.data', 'r')
-
+    file_open_old('iris.data', 'w+', full=False)
