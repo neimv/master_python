@@ -23,6 +23,15 @@ class IrisClass:
             "Iris-versicolor": 2,
             "Iris-virginica": 3,
         }
+        n_class_type = mapper[self.class_type]
+
+        return (
+            f'{self.sepal_length},'
+            f'{self.sepal_width},'
+            f'{self.petal_length},'
+            f'{self.petal_width},'
+            f'{n_class_type}'
+        )
 
     def __str__(self) -> str:
         return (
@@ -41,11 +50,29 @@ class IrisClass:
         )
 
 
-def file_open_old(name: str, mode: str, encoding: str = "utf-8"):
+def file_open_old(
+    name: str,
+    mode: str,
+    encoding: str = "utf-8",
+    full: bool = False
+):
     f = open(name, mode, encoding=encoding)
+    read_file(f)
+    f.close()
+
+
+def file_open_context(name: str, mode: str, encoding: str = "utf-8"):
+    pass
+
+
+def write_file(file_buffer):
+    pass
+
+
+def read_file(file_buffer):
     flowers = []
 
-    for line in f:
+    for line in file_buffer:
         line_split = line.replace('\n', '').split(',')
         # print(line_split)
 
@@ -58,21 +85,8 @@ def file_open_old(name: str, mode: str, encoding: str = "utf-8"):
                 line_split[4],
             )
             print(str(iris_flower))
+            print(iris_flower.transform_class_type())
             # flowers.append(iris_flower)
-
-    f.close()
-
-
-def file_open_context(name: str, mode: str, encoding: str = "utf-8"):
-    pass
-
-
-def write_file():
-    pass
-
-
-def read_file():
-    pass
 
 
 def main(argument):
