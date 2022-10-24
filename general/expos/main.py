@@ -1,6 +1,5 @@
 
 import argparse
-from fileinput import filename
 
 
 class IrisClass:
@@ -20,9 +19,9 @@ class IrisClass:
 
     def transform_class_type(self) -> str:
         mapper = {
-            "Iris-setosa": 1,
-            "Iris-versicolor": 2,
-            "Iris-virginica": 3,
+            "Iris-setosa": 0,
+            "Iris-versicolor": 1,
+            "Iris-virginica": 2,
         }
         n_class_type = mapper[self.class_type]
 
@@ -71,20 +70,28 @@ def file_open_context(
     pass
 
 
-def write_file(file_name, mode, file_buffer, data, encoding='utf-8'):
+def write_file(file_name, mode, file_buffer, data=None, encoding='utf-8'):
     file_name = f'{file_name}_backup.csv'
-    if data:
+    if data is not None:
         with open(file_name, 'w', encoding=encoding) as file_bk:
-            for flower in data:            
+            for flower in data:
                 file_bk.write(flower.transform_class_type())
+                file_bk.write('\n')
+    else:
+        while True:
+            writer = input(
+                "Want do you write in the document? (-1 to exit)>> "
+            )
+
+            if writer == "-1":
+                break
+
+            file_buffer.write(writer + "\n")
 
 
 def read_file(file_buffer, full: bool) -> list:
     flowers = []
-
-    print(file_buffer)
     file_buffer = file_buffer.readlines() if full else file_buffer
-    print(file_buffer)
 
     for line in file_buffer:
         line_split = line.replace('\n', '').split(',')
@@ -100,19 +107,17 @@ def read_file(file_buffer, full: bool) -> list:
             )
             flowers.append(iris_flower)
 
-
     return flowers
 
 
-def __file_works(name:str, mode: str, file_work, full):
+def __file_works(name: str, mode: str, file_work, full):
     if mode == 'r':
         flowers = read_file(file_work, full)
 
         for flower in flowers:
             print(flower)
     elif mode == 'w':
-        flowers = read_file(file_work, full)
-        write_file(name, mode, file_work, flowers)
+        write_file(name, mode, file_work)
     elif mode == 'a':
         pass
     elif mode == 'x':
@@ -120,7 +125,8 @@ def __file_works(name:str, mode: str, file_work, full):
     elif mode == 'w+':
         pass
     elif mode == 'r+':
-        pass
+        flowers = read_file(file_work, full)
+        write_file(name, mode, file_work, flowers)
 
 
 def main(argument):
@@ -128,4 +134,4 @@ def main(argument):
 
 
 if __name__ == "__main__":
-    file_open_old('iris.data', 'w+', full=False)
+    file_open_old('iris.data', 'w', full=False)
