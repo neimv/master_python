@@ -1,6 +1,5 @@
 
 import argparse
-from fileinput import filename
 
 
 class IrisClass:
